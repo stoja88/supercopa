@@ -1,6 +1,16 @@
 {
   "version": 2,
   "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "env": {
+    "DATABASE_URL": "postgresql://neondb_owner:npg_XCgzkY4ZUt5w@ep-soft-poetry-a86rag2g-pooler.eastus2.azure.neon.tech/neondb?sslmode=require",
+    "POSTGRES_PRISMA_URL": "postgresql://neondb_owner:npg_XCgzkY4ZUt5w@ep-soft-poetry-a86rag2g-pooler.eastus2.azure.neon.tech/neondb?sslmode=require",
+    "POSTGRES_URL_NON_POOLING": "postgresql://neondb_owner:npg_XCgzkY4ZUt5w@ep-soft-poetry-a86rag2g.eastus2.azure.neon.tech/neondb?sslmode=require",
+    "NEXTAUTH_URL": "https://coparentalidad.vercel.app",
+    "NEXTAUTH_SECRET": "ZSud6oHmlbgw42z0zluiIY0achmWeYX31dKUrGumsrA=",
+    "NEXT_PUBLIC_APP_URL": "https://coparentalidad.vercel.app"
+  },
   "crons": [
     {
       "path": "/api/cron/cleanup-sessions",
