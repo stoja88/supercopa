@@ -4,18 +4,6 @@
   "installCommand": "npm run prepare-production",
   "framework": "nextjs",
   "regions": ["mad1"],
-  "env": {
-    "NEXTAUTH_URL": {
-      "description": "URL completa de la aplicación (ej. https://coparentalidad.vercel.app)"
-    },
-    "NEXTAUTH_SECRET": {
-      "description": "Secreto para NextAuth (genera uno con `openssl rand -base64 32`)",
-      "generateValue": true
-    },
-    "NEXT_PUBLIC_APP_URL": {
-      "description": "URL pública de la aplicación (ej. https://coparentalidad.vercel.app)"
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/cleanup-sessions",
