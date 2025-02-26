@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
+  "buildCommand": "npx prisma generate && next build",
   "env": {
     "DATABASE_URL": "postgresql://neondb_owner:npg_XCgzkY4ZUt5w@ep-soft-poetry-a86rag2g-pooler.eastus2.azure.neon.tech/neondb?sslmode=require",
     "POSTGRES_PRISMA_URL": "postgresql://neondb_owner:npg_XCgzkY4ZUt5w@ep-soft-poetry-a86rag2g-pooler.eastus2.azure.neon.tech/neondb?sslmode=require",
