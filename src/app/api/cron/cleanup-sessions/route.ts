@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutos
+export const maxDuration = 60; // 1 minuto (máximo permitido en plan hobby)
 
 export async function GET(request: Request) {
   try {
