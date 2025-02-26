@@ -10,7 +10,7 @@ CoParentalidad es una aplicación web diseñada para ayudar a familias separadas
 - **Gestión de Documentos**: Almacenamiento y compartición de documentos importantes.
 - **Seguimiento de Gastos**: Registro y división de gastos relacionados con los hijos.
 - **Panel de Administración**: Gestión completa de usuarios y contenido para administradores.
-- **Suscripciones**: Diferentes planes de suscripción con características específicas.
+- **Suscripciones**: Diferentes planes de suscripción con características específicas (próximamente).
 
 ## Tecnologías
 
@@ -18,13 +18,12 @@ CoParentalidad es una aplicación web diseñada para ayudar a familias separadas
 - **Backend**: Next.js API Routes, Prisma ORM
 - **Base de Datos**: PostgreSQL
 - **Autenticación**: NextAuth.js
-- **Pagos**: Stripe
+- **Pagos**: Stripe (implementación futura)
 
 ## Requisitos Previos
 
 - Node.js 18.x o superior
 - PostgreSQL
-- Cuenta de Stripe (para procesamiento de pagos)
 
 ## Instalación
 
@@ -67,11 +66,6 @@ DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/coparentalidad"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="tu-secreto-seguro"
 
-# Stripe
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
-
 # Email (opcional)
 EMAIL_SERVER_HOST="smtp.ejemplo.com"
 EMAIL_SERVER_PORT=587
@@ -80,12 +74,7 @@ EMAIL_SERVER_PASSWORD="contraseña"
 EMAIL_FROM="noreply@ejemplo.com"
 ```
 
-### Stripe
-
-1. Crea una cuenta en [Stripe](https://stripe.com)
-2. Obtén tus claves API desde el panel de control
-3. Configura los webhooks para apuntar a `https://tu-dominio.com/api/webhook`
-4. Añade los eventos necesarios: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
+Nota: La configuración de Stripe para pagos se implementará en una fase posterior.
 
 ## Despliegue
 

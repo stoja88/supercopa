@@ -57,6 +57,8 @@ git push -u origin main
    - `NEXTAUTH_SECRET`: Un secreto aleatorio (puedes generarlo con `openssl rand -base64 32`)
    - `NEXT_PUBLIC_APP_URL`: La misma URL que `NEXTAUTH_URL`
 
+   Nota: La configuración de Stripe se realizará más adelante.
+
 5. Haz clic en "Deploy"
 
 ### 4. Ejecutar migraciones de la base de datos
@@ -80,6 +82,10 @@ npx prisma migrate deploy
 1. Visita la URL de tu aplicación desplegada
 2. Verifica que puedes registrarte e iniciar sesión
 3. Comprueba que todas las funcionalidades están operativas
+
+## Funcionalidades pendientes
+
+La integración con Stripe para el procesamiento de pagos y suscripciones se configurará más adelante. Por ahora, la aplicación funcionará sin las características de suscripción premium.
 
 ## Solución de problemas
 

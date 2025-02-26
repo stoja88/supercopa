@@ -18,13 +18,7 @@
    - Seguimiento de gastos
    - Recursos y asistente legal
 
-3. **Integración de Suscripciones**
-   - Configuración de Stripe para pagos
-   - Implementación de planes de suscripción
-   - Gestión de suscripciones de usuarios
-   - Webhooks para procesar eventos de Stripe
-
-4. **Preparación para Despliegue**
+3. **Preparación para Despliegue**
    - Configuración de variables de entorno
    - Creación de guías de despliegue
    - Configuración de GitHub y GitHub Actions
@@ -43,10 +37,11 @@
    - Configurar la base de datos PostgreSQL
    - Ejecutar las migraciones de Prisma
 
-3. **Configurar Stripe en Producción**
-   - Actualizar las claves de API de Stripe para producción
-   - Configurar los webhooks para el entorno de producción
-   - Probar el flujo de suscripción completo
+3. **Integración de Suscripciones (Pendiente)**
+   - La configuración de Stripe para pagos se realizará más adelante
+   - Implementación de planes de suscripción
+   - Gestión de suscripciones de usuarios
+   - Webhooks para procesar eventos de Stripe
 
 4. **Mejoras Futuras**
    - Implementar notificaciones por correo electrónico
@@ -61,7 +56,6 @@
   - [README.md](./README.md): Información general del proyecto
   - [DEPLOY.md](./DEPLOY.md): Guía de despliegue en Vercel
   - [GITHUB_SETUP.md](./GITHUB_SETUP.md): Configuración del repositorio en GitHub
-  - [STRIPE_SETUP.md](./STRIPE_SETUP.md): Configuración de Stripe
 
 - **Configuración**:
   - [.env.example](./.env.example): Ejemplo de variables de entorno
@@ -75,4 +69,5 @@
 - La aplicación está diseñada para ser escalable y mantenible
 - Se han implementado buenas prácticas de desarrollo y seguridad
 - El código está estructurado para facilitar futuras mejoras y extensiones
-- Se recomienda revisar regularmente las dependencias para mantenerlas actualizadas 
+- Se recomienda revisar regularmente las dependencias para mantenerlas actualizadas
+- La integración con Stripe para pagos y suscripciones se implementará en una fase posterior 
