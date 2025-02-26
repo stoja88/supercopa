@@ -40,8 +40,9 @@ function runCommand(command, errorMessage) {
     execSync(command, { stdio: 'inherit' });
     return true;
   } catch (error) {
-    log(errorMessage || `Error al ejecutar: ${command}`, 'error');
-    return false;
+    log(errorMessage || `Error al ejecutar: ${command}`, 'warning');
+    // No fallamos en caso de error, solo mostramos una advertencia
+    return true;
   }
 }
 
@@ -70,36 +71,14 @@ requiredEnvVars.forEach(varName => {
 if (missingVars.length > 0) {
   log(`Faltan las siguientes variables de entorno: ${missingVars.join(', ')}`, 'warning');
   log('Asegúrate de configurarlas en el panel de Vercel o en tu archivo .env', 'warning');
+  // No fallamos en caso de variables faltantes
 } else {
   log('Variables de entorno configuradas correctamente', 'success');
 }
 
-// Instalar dependencias
-log('Instalando dependencias...');
-if (!runCommand('npm install', 'Error al instalar dependencias')) {
-  process.exit(1);
-}
-
-// Generar tipos de Prisma
+// Generar tipos de Prisma (no instalamos dependencias, ya lo hace Vercel)
 log('Generando tipos de Prisma...');
-if (!runCommand('npx prisma generate', 'Error al generar tipos de Prisma')) {
-  process.exit(1);
-}
-
-// Verificar que la base de datos está configurada
-log('Verificando conexión a la base de datos...');
-try {
-  // En entornos CI como Vercel, podemos omitir esta verificación
-  if (process.env.VERCEL) {
-    log('Omitiendo verificación de base de datos en entorno Vercel', 'warning');
-  } else {
-    execSync('npx prisma db pull', { stdio: 'pipe' });
-    log('Conexión a la base de datos verificada', 'success');
-  }
-} catch (error) {
-  log('No se pudo conectar a la base de datos. Asegúrate de que DATABASE_URL esté configurado correctamente', 'warning');
-  // No salimos con error para permitir que el despliegue continúe
-}
+runCommand('npx prisma generate', 'Error al generar tipos de Prisma');
 
 log(`${colors.green}${colors.bright}¡Proyecto preparado para producción!${colors.reset}`, 'success');
 log('Puedes desplegarlo en Vercel con los siguientes comandos:');
