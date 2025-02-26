@@ -89,10 +89,16 @@ if (!runCommand('npx prisma generate', 'Error al generar tipos de Prisma')) {
 // Verificar que la base de datos está configurada
 log('Verificando conexión a la base de datos...');
 try {
-  execSync('npx prisma db pull', { stdio: 'pipe' });
-  log('Conexión a la base de datos verificada', 'success');
+  // En entornos CI como Vercel, podemos omitir esta verificación
+  if (process.env.VERCEL) {
+    log('Omitiendo verificación de base de datos en entorno Vercel', 'warning');
+  } else {
+    execSync('npx prisma db pull', { stdio: 'pipe' });
+    log('Conexión a la base de datos verificada', 'success');
+  }
 } catch (error) {
   log('No se pudo conectar a la base de datos. Asegúrate de que DATABASE_URL esté configurado correctamente', 'warning');
+  // No salimos con error para permitir que el despliegue continúe
 }
 
 log(`${colors.green}${colors.bright}¡Proyecto preparado para producción!${colors.reset}`, 'success');
