@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String             @id @default(cuid())
+  name            String?
+  email           String             @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  role            Role               @default(PARENT)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  accounts        Account[]
+  documents       Document[]
+  events          Event[]
+  expenses        Expense[]
+  sentInvitations FamilyInvitation[] @relation("SentInvitations")
+  families        FamilyMember[]
+  messages        Message[]
+  sessions        Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Family {
+  id          String             @id @default(cuid())
+  name        String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  documents   Document[]
+  events      Event[]
+  expenses    Expense[]
+  invitations FamilyInvitation[]
+  members     FamilyMember[]
+  messages    Message[]
+}
+
+model FamilyMember {
+  id        String   @id @default(cuid())
+  userId    String
+  familyId  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FamilyInvitation {
+  id          String           @id @default(cuid())
+  familyId    String
+  email       String
+  role        Role
+  status      InvitationStatus @default(PENDING)
+  invitedById String
+  expiresAt   DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  family      Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  invitedBy   User             @relation("SentInvitations", fields: [invitedById], references: [id])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  location    String?
+  createdById String
+  familyId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  familyId  String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id])
+}
+
+model Document {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  fileType    String
+  uploaderId  String
+  familyId    String
+  category    DocumentCategory
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  family      Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  uploader    User             @relation(fields: [uploaderId], references: [id])
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  title       String
+  amount      Float
+  date        DateTime
+  description String?
+  receipt     String?
+  category    ExpenseCategory
+  createdById String
+  familyId    String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  family      Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  PARENT
+  LEGAL_GUARDIAN
+  ADMIN
+}
+
+enum DocumentCategory {
+  LEGAL
+  MEDICAL
+  EDUCATIONAL
+  FINANCIAL
+  OTHER
+}
+
+enum ExpenseCategory {
+  EDUCATION
+  HEALTH
+  CLOTHING
+  FOOD
+  ENTERTAINMENT
+  TRANSPORTATION
+  OTHER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
