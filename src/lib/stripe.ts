@@ -1,11 +1,45 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2023-10-16',
-  typescript: true,
-});
+// Verificar si la clave API de Stripe está disponible
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+let stripeInstance: Stripe | null = null;
+
+// Solo inicializar Stripe si la clave API está disponible
+if (stripeSecretKey) {
+  stripeInstance = new Stripe(stripeSecretKey, {
+    apiVersion: '2023-10-16',
+    typescript: true,
+  });
+}
+
+// Exportar una instancia de Stripe o una implementación simulada
+export const stripe = stripeInstance || {
+  customers: {
+    list: async () => ({ data: [] }),
+    create: async () => ({ id: 'mock_customer_id' }),
+  },
+  checkout: {
+    sessions: {
+      create: async () => ({ url: '#' }),
+    },
+  },
+  billingPortal: {
+    sessions: {
+      create: async () => ({ url: '#' }),
+    },
+  },
+  webhooks: {
+    constructEvent: () => ({ type: 'mock_event', data: { object: {} } }),
+  },
+} as unknown as Stripe;
 
 export const getStripeCustomer = async (email: string, name?: string) => {
+  // Si Stripe no está configurado, devolver un cliente simulado
+  if (!stripeInstance) {
+    console.log('Stripe no está configurado. Devolviendo cliente simulado.');
+    return { id: 'mock_customer_id' };
+  }
+
   const customers = await stripe.customers.list({ email });
 
   // Si el cliente ya existe, devolver el primero
@@ -31,6 +65,12 @@ export const createCheckoutSession = async ({
   successUrl: string;
   cancelUrl: string;
 }) => {
+  // Si Stripe no está configurado, devolver una URL simulada
+  if (!stripeInstance) {
+    console.log('Stripe no está configurado. Devolviendo URL simulada.');
+    return { url: successUrl };
+  }
+
   return stripe.checkout.sessions.create({
     customer: customerId,
     line_items: [
@@ -55,6 +95,12 @@ export const createBillingPortalSession = async ({
   customerId: string;
   returnUrl: string;
 }) => {
+  // Si Stripe no está configurado, devolver una URL simulada
+  if (!stripeInstance) {
+    console.log('Stripe no está configurado. Devolviendo URL simulada.');
+    return { url: returnUrl };
+  }
+
   return stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,

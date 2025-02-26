@@ -4,6 +4,9 @@ import { stripe } from '@/lib/stripe';
 import { upsertSubscription } from '@/lib/subscription';
 import prisma from '@/lib/prisma';
 
+// Verificar si Stripe está configurado
+const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_WEBHOOK_SECRET;
+
 // Función para manejar el evento de suscripción creada o actualizada
 const handleSubscriptionCreatedOrUpdated = async (subscription: any) => {
   const customerId = subscription.customer as string;
@@ -77,6 +80,12 @@ const handleSubscriptionCanceled = async (subscription: any) => {
 
 // POST: Manejar eventos de webhook de Stripe
 export async function POST(request: Request) {
+  // Si Stripe no está configurado, devolver una respuesta simulada
+  if (!isStripeConfigured) {
+    console.log('Stripe no está configurado. Devolviendo respuesta simulada para webhook.');
+    return NextResponse.json({ received: true });
+  }
+
   const body = await request.text();
   const signature = headers().get('stripe-signature') as string;
 

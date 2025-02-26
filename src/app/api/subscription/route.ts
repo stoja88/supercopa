@@ -8,6 +8,9 @@ import {
 } from '@/lib/subscription';
 import { getStripeCustomer, createCheckoutSession, createBillingPortalSession } from '@/lib/stripe';
 
+// Verificar si Stripe está configurado
+const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY;
+
 // GET: Obtener información de suscripción del usuario actual
 export async function GET() {
   try {
@@ -32,6 +35,7 @@ export async function GET() {
       subscription,
       plans,
       isActive,
+      stripeEnabled: isStripeConfigured,
     });
   } catch (error) {
     console.error('Error al obtener información de suscripción:', error);
@@ -49,6 +53,14 @@ export async function POST(request: Request) {
     
     if (!session?.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    
+    // Si Stripe no está configurado, devolver un error
+    if (!isStripeConfigured) {
+      return NextResponse.json(
+        { error: 'El sistema de pagos no está configurado actualmente', stripeEnabled: false },
+        { status: 503 }
+      );
     }
     
     const { planId, priceId } = await request.json();
@@ -92,6 +104,14 @@ export async function PUT(request: Request) {
     
     if (!session?.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    
+    // Si Stripe no está configurado, devolver un error
+    if (!isStripeConfigured) {
+      return NextResponse.json(
+        { error: 'El sistema de pagos no está configurado actualmente', stripeEnabled: false },
+        { status: 503 }
+      );
     }
     
     const userId = session.user.id;
