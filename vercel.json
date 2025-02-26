@@ -1,9 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm run prepare-production",
   "framework": "nextjs",
-  "regions": ["cdg1"],
   "crons": [
     {
       "path": "/api/cron/cleanup-sessions",
