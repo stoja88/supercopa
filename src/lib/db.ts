@@ -34,6 +34,10 @@ if (process.env.NODE_ENV === "development") {
   global.prisma = prisma;
 }
 
+// Exportar para compatibilidad con código existente
+export { prisma as db };
+
+// Exportación por defecto
 export default prisma;
 
 // Servicios para el panel de administración
