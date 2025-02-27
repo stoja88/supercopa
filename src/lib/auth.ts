@@ -19,71 +19,96 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      id: "credentials",
+      name: "Credenciales",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.error("Credenciales incompletas");
           throw new Error("Credenciales incompletas");
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
+        try {
+          // Conectar a la base de datos
+          const db = await getDynamicPrismaClient();
 
-        if (!user || !user.password) {
-          throw new Error("Usuario no encontrado");
+          // Buscar usuario por email
+          const user = await db.user.findUnique({
+            where: {
+              email: credentials.email,
+            },
+          });
+
+          if (!user) {
+            console.error(`Usuario no encontrado: ${credentials.email}`);
+            throw new Error("Credenciales inválidas");
+          }
+
+          // Verificar contraseña
+          const passwordMatch = await bcrypt.compare(credentials.password, user.hashedPassword || "");
+
+          if (!passwordMatch) {
+            console.error("Contraseña incorrecta");
+            throw new Error("Credenciales inválidas");
+          }
+
+          console.log("Usuario autenticado correctamente:", {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          });
+
+          // Devolver usuario sin contraseña
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            image: user.image,
+          };
+        } catch (error) {
+          console.error("Error en authorize:", error);
+          throw error;
         }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Contraseña incorrecta");
-        }
-
-        // Registrar el inicio de sesión
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { 
-            updatedAt: new Date(),
-          },
-        });
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          image: user.image,
-        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user, account }) {
+      // Inicial acceso: Añadir usuario al token
       if (user) {
+        console.log("JWT callback - user added to token:", user);
         token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
         token.role = user.role;
-        // Establecer una expiración más larga
-        token.exp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60; // 30 días
+        token.picture = user.image;
       }
-      
+
+      // Para actualizaciones de perfil, podríamos refrescar el token aquí
+
       return token;
     },
-    async session({ session, token }) {
+    
+    async session({ session, token, user }) {
       if (token) {
+        console.log("Session callback - token added to session:", token);
+        
+        // Añadir información del token a la sesión
         session.user.id = token.id as string;
+        session.user.name = token.name;
+        session.user.email = token.email;
         session.user.role = token.role as string;
+        session.user.image = token.picture as string | null;
       }
+
       return session;
     },
+    
     async redirect({ url, baseUrl }) {
       // Redirigir a los usuarios según su rol después del inicio de sesión
       if (url.startsWith("/dashboard") || url === "/dashboard") {
@@ -99,19 +124,8 @@ export const authOptions: NextAuthOptions = {
       return baseUrl;
     },
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60, // 30 días
-      },
-    },
-  },
   debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 // Función para verificar si un usuario está autenticado en el cliente

@@ -52,6 +52,7 @@ function LoginForm() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   const {
     register,
@@ -68,23 +69,31 @@ function LoginForm() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     setError(null);
+    setDebugInfo(null);
 
     try {
+      console.log("Iniciando sesión con:", { email: data.email, password: "********" });
+      
       const result = await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
 
+      console.log("Resultado de signIn:", result);
+      setDebugInfo(result);
+
       if (result?.error) {
-        setError("Credenciales inválidas. Por favor, inténtalo de nuevo.");
+        setError(`Error: ${result.error}`);
         setIsLoading(false);
         return;
       }
 
       router.push(callbackUrl);
     } catch (error) {
-      setError("Ocurrió un error al iniciar sesión. Por favor, inténtalo de nuevo.");
+      console.error("Error en onSubmit:", error);
+      setError(`Error inesperado: ${error instanceof Error ? error.message : String(error)}`);
+      setDebugInfo(error);
       setIsLoading(false);
     }
   };
@@ -134,6 +143,18 @@ function LoginForm() {
                 >
                   <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
                   <span>{error}</span>
+                </motion.div>
+              )}
+
+              {/* Mostrar información de depuración en desarrollo */}
+              {process.env.NODE_ENV === "development" && debugInfo && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded-md overflow-auto max-h-32"
+                >
+                  <strong>Debug Info:</strong>
+                  <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
                 </motion.div>
               )}
 
@@ -304,14 +325,7 @@ function LoginForm() {
 // Componente principal con Suspense
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Cargando...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Cargando...</div>}>
       <LoginForm />
     </Suspense>
   );

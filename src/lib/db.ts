@@ -1,11 +1,40 @@
 import { PrismaClient } from '@prisma/client'
 
-// Evitar múltiples instancias de Prisma Client en desarrollo
-const globalForPrisma = global as unknown as { prisma: PrismaClient }
+declare global {
+  var prisma: PrismaClient | undefined;
+}
 
-export const prisma = globalForPrisma.prisma || new PrismaClient()
+// Función para obtener cliente de Prisma dinámicamente
+export async function getDynamicPrismaClient() {
+  try {
+    console.log("Conectando a la base de datos con URL:", process.env.DATABASE_URL?.substring(0, 15) + "...");
+    
+    // Inicializa Prisma Client
+    const prisma = new PrismaClient({
+      log: process.env.DEBUG === "true" ? ["query", "error", "warn"] : ["error"],
+    });
+    
+    // Prueba la conexión
+    await prisma.$connect();
+    console.log("Conexión a la base de datos establecida correctamente");
+    
+    return prisma;
+  } catch (error) {
+    console.error("Error al conectar con la base de datos:", error);
+    throw new Error(`Error de conexión a base de datos: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Manejo global de Prisma para entorno de desarrollo
+const prisma = global.prisma || new PrismaClient({
+  log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+});
+
+if (process.env.NODE_ENV === "development") {
+  global.prisma = prisma;
+}
+
+export default prisma;
 
 // Servicios para el panel de administración
 

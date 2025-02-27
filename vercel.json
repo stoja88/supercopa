@@ -8,18 +8,14 @@
       "src": "package.json",
       "use": "@vercel/next",
       "config": {
-        "installCommand": "npm install --legacy-peer-deps",
+        "installCommand": "npm install",
         "buildCommand": "npm run vercel-build"
       }
     }
   ],
   "env": {
-    "PRISMA_SKIP_POSTINSTALL_GENERATE": "true"
-  },
-  "build": {
-    "env": {
-      "PRISMA_GENERATE_DATAPROXY": "true"
-    }
+    "PRISMA_SKIP_POSTINSTALL_GENERATE": "true",
+    "PRISMA_GENERATE_DATAPROXY": "true"
   },
   "git": {
     "deploymentEnabled": {

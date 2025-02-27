@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 
 interface MarketplaceItem {
   id: string;
@@ -60,7 +59,8 @@ export function MarketplaceForm({ item, onSave, onCancel, isCreating = false }: 
     }
   };
 
-  const handleSwitchChange = (checked: boolean) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
     setFormData(prev => ({ ...prev, featured: checked }));
   };
 
@@ -171,10 +171,12 @@ export function MarketplaceForm({ item, onSave, onCancel, isCreating = false }: 
       </div>
       
       <div className="flex items-center space-x-2">
-        <Switch 
+        <input 
+          type="checkbox" 
           id="featured" 
           checked={formData.featured} 
-          onCheckedChange={handleSwitchChange}
+          onChange={handleCheckboxChange}
+          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
         />
         <Label htmlFor="featured">Destacado</Label>
       </div>
