@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 export type UserRole = "ADMIN" | "USER" | "MEDIADOR"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as any,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 días
@@ -16,6 +16,20 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
     error: "/login",
+  },
+  debug: process.env.NODE_ENV !== "production" || process.env.DEBUG === "true",
+  logger: {
+    error(code, metadata) {
+      console.error(`[Auth] ERROR: ${code}`, metadata);
+    },
+    warn(code) {
+      console.warn(`[Auth] WARNING: ${code}`);
+    },
+    debug(code, metadata) {
+      if (process.env.DEBUG === "true") {
+        console.log(`[Auth] DEBUG: ${code}`, metadata);
+      }
+    },
   },
   providers: [
     CredentialsProvider({
@@ -38,7 +52,7 @@ export const authOptions: NextAuthOptions = {
           // Buscar usuario por email
           const user = await db.user.findUnique({
             where: {
-              email: credentials.email,
+              email: credentials.email.toLowerCase().trim(),
             },
           });
 
@@ -51,7 +65,7 @@ export const authOptions: NextAuthOptions = {
           const passwordMatch = await bcrypt.compare(credentials.password, user.hashedPassword || "");
 
           if (!passwordMatch) {
-            console.error("Contraseña incorrecta");
+            console.error("Contraseña incorrecta para usuario:", user.email);
             throw new Error("Credenciales inválidas");
           }
 
@@ -89,19 +103,17 @@ export const authOptions: NextAuthOptions = {
         token.picture = user.image;
       }
 
-      // Para actualizaciones de perfil, podríamos refrescar el token aquí
-
       return token;
     },
     
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (token) {
         console.log("Session callback - token added to session:", token);
         
         // Añadir información del token a la sesión
         session.user.id = token.id as string;
-        session.user.name = token.name;
-        session.user.email = token.email;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
         session.user.role = token.role as string;
         session.user.image = token.picture as string | null;
       }
@@ -110,21 +122,20 @@ export const authOptions: NextAuthOptions = {
     },
     
     async redirect({ url, baseUrl }) {
-      // Redirigir a los usuarios según su rol después del inicio de sesión
-      if (url.startsWith("/dashboard") || url === "/dashboard") {
-        return baseUrl + "/dashboard";
-      }
+      // Asegurar que las URLs de redirección estén correctamente formateadas
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || baseUrl;
       
-      // Redirecciones predeterminadas
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
-      } else if (new URL(url).origin === baseUrl) {
+      // Si la URL comienza con la URL base o es una URL relativa, permitirla
+      if (url.startsWith(appUrl) || url.startsWith("/")) {
+        console.log("Redirigiendo a:", url);
         return url;
       }
-      return baseUrl;
-    },
+      
+      // Por defecto, redirigir al dashboard
+      console.log("Redirigiendo por defecto a:", `${appUrl}/dashboard`);
+      return `${appUrl}/dashboard`;
+    }
   },
-  debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
 };
 
