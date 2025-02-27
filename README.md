@@ -1,6 +1,46 @@
-# CoParentalidad
+# SuperCopa - Fork de CoParentalidad
 
-CoParentalidad es una aplicación web diseñada para ayudar a familias separadas a gestionar la crianza compartida de sus hijos de manera efectiva y armoniosa. La plataforma facilita la comunicación, la planificación de eventos, la gestión de documentos y el seguimiento de gastos entre los miembros de la familia.
+Este es un fork del proyecto CoParentalidad con mejoras adicionales:
+
+- Corrección de errores en la interfaz de usuario
+- Optimización del rendimiento del dashboard
+- Mejoras en la experiencia de usuario
+
+## Instalación
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/stoja88/supercopa.git
+
+# Entrar al directorio
+cd supercopa
+
+# Instalar dependencias
+npm install
+
+# Generar Prisma Client
+npx prisma generate
+
+# Iniciar en desarrollo
+npm run dev
+```
+
+## Despliegue
+
+Para desplegar en Vercel:
+
+```bash
+npm run build
+npx vercel --prod
+```
+
+## Características principales
+
+- Autenticación segura con NextAuth.js
+- Dashboard interactivo para co-parentalidad
+- Gestión de documentos compartidos
+- Calendario familiar compartido
+- Sistema de mensajería entre co-padres
 
 ## Características
 
@@ -25,33 +65,6 @@ CoParentalidad es una aplicación web diseñada para ayudar a familias separadas
 
 - Node.js 18.x o superior
 - PostgreSQL
-
-## Instalación
-
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/tu-usuario/coparentalidad.git
-   cd coparentalidad
-   ```
-
-2. Instalar dependencias:
-   ```bash
-   npm install
-   ```
-
-3. Configurar variables de entorno:
-   - Copia el archivo `.env.example` a `.env`
-   - Completa las variables necesarias (conexión a base de datos, claves de API, etc.)
-
-4. Configurar la base de datos:
-   ```bash
-   npx prisma migrate dev
-   ```
-
-5. Iniciar el servidor de desarrollo:
-   ```bash
-   npm run dev
-   ```
 
 ## Configuración
 
