@@ -8,8 +8,8 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CoParent - Plataforma de Co-Parentalidad",
-  description: "Simplifica la co-parentalidad con nuestra plataforma integral para coordinar, comunicar y colaborar en la crianza compartida.",
+  title: "SuperCopa - Plataforma de Co-Parentalidad Mejorada",
+  description: "Plataforma avanzada para la gestión de la co-parentalidad con características mejoradas para familias modernas.",
 };
 
 export default function RootLayout({
