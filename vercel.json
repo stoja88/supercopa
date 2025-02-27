@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
   "outputDirectory": ".next",
   "builds": [
@@ -9,7 +9,7 @@
       "use": "@vercel/next",
       "config": {
         "installCommand": "npm install --legacy-peer-deps",
-        "buildCommand": "prisma generate && next build"
+        "buildCommand": "npm run vercel-build"
       }
     }
   ],
