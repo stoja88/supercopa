@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Verificar contraseña
-          const passwordMatch = await bcrypt.compare(credentials.password, user.hashedPassword || "");
+          const passwordMatch = await bcrypt.compare(credentials.password, user.password || "");
 
           if (!passwordMatch) {
             console.error("Contraseña incorrecta para usuario:", user.email);

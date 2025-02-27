@@ -29,7 +29,7 @@ async function main() {
         email: true,
         name: true,
         role: true,
-        hashedPassword: true,
+        password: true,
       },
     });
 
@@ -40,11 +40,11 @@ async function main() {
       console.log(`   ID: ${admin.id}`);
       console.log(`   Nombre: ${admin.name}`);
       console.log(`   Rol: ${admin.role}`);
-      console.log(`   ¿Tiene contraseña?: ${admin.hashedPassword ? 'Sí' : 'No'}`);
+      console.log(`   ¿Tiene contraseña?: ${admin.password ? 'Sí' : 'No'}`);
       
       // Comprobar si la contraseña es "admin123"
-      if (admin.hashedPassword) {
-        const isCorrect = await bcrypt.compare('admin123', admin.hashedPassword);
+      if (admin.password) {
+        const isCorrect = await bcrypt.compare('admin123', admin.password);
         console.log(`   ¿La contraseña 'admin123' es correcta?: ${isCorrect ? 'Sí' : 'No'}`);
       }
     }
