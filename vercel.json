@@ -1,3 +1,29 @@
 {
-  "buildCommand": "npm run build"
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "installCommand": "npm install --legacy-peer-deps",
+        "buildCommand": "prisma generate && next build"
+      }
+    }
+  ],
+  "env": {
+    "PRISMA_SKIP_POSTINSTALL_GENERATE": "true"
+  },
+  "build": {
+    "env": {
+      "PRISMA_GENERATE_DATAPROXY": "true"
+    }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
 } 

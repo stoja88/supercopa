@@ -1,127 +1,94 @@
-# Guía de Despliegue en Vercel
+# Instrucciones para Actualizar la Base de Datos y Desplegar a Vercel
 
-Esta guía te ayudará a desplegar la aplicación CoParentalidad en Vercel con una base de datos PostgreSQL.
+Este documento proporciona instrucciones detalladas sobre cómo actualizar la base de datos con las nuevas tablas para la funcionalidad de mediación y cómo desplegar la aplicación actualizada a Vercel.
 
-## Requisitos previos
+## Requisitos Previos
 
-1. Una cuenta en [Vercel](https://vercel.com)
-2. Una cuenta en [GitHub](https://github.com)
-3. Una base de datos PostgreSQL (puedes usar [Supabase](https://supabase.com), [Neon](https://neon.tech) o [Railway](https://railway.app))
+1. Tener instalado Node.js (versión 14 o superior) y npm
+2. Tener una cuenta en Vercel y estar autenticado localmente (`vercel login`)
+3. Tener acceso a la base de datos (credenciales en el archivo `.env`)
 
-## Pasos para el despliegue
+## Opción 1: Usando el Script Automatizado
 
-### 1. Preparar el repositorio en GitHub
+Hemos preparado un script que automatiza todo el proceso de migración y despliegue:
 
-1. Crea un nuevo repositorio en GitHub
-2. Sube el código de la aplicación al repositorio:
+1. Abra una terminal en la raíz del proyecto
+2. Haga el script ejecutable:
+   ```bash
+   chmod +x db-deploy.sh
+   ```
+3. Ejecute el script:
+   ```bash
+   ./db-deploy.sh
+   ```
 
-```bash
-git init
-git add .
-git commit -m "Versión inicial"
-git branch -M main
-git remote add origin https://github.com/tu-usuario/coparentalidad.git
-git push -u origin main
-```
+El script realizará las siguientes acciones:
+- Generar y aplicar las migraciones de Prisma
+- Validar el esquema de la base de datos
+- Generar el cliente de Prisma
+- Construir la aplicación
+- Desplegar a Vercel
 
-### 2. Configurar la base de datos
+## Opción 2: Proceso Manual
 
-#### Opción A: Usar Supabase
+Si prefiere realizar el proceso manualmente o si el script automatizado falla, siga estos pasos:
 
-1. Crea una cuenta en [Supabase](https://supabase.com)
-2. Crea un nuevo proyecto
-3. Ve a "Settings" > "Database" y copia la cadena de conexión PostgreSQL
-4. Reemplaza `[YOUR-PASSWORD]` con la contraseña que estableciste al crear el proyecto
+### 1. Actualizar la Base de Datos
 
-#### Opción B: Usar Neon
+1. Genere una nueva migración:
+   ```bash
+   npx prisma migrate dev --name add_mediacion_tables
+   ```
 
-1. Crea una cuenta en [Neon](https://neon.tech)
-2. Crea un nuevo proyecto
-3. Copia la cadena de conexión proporcionada
+2. Valide el esquema:
+   ```bash
+   npx prisma validate
+   ```
 
-#### Opción C: Usar Railway
+3. Genere el cliente de Prisma:
+   ```bash
+   npx prisma generate
+   ```
 
-1. Crea una cuenta en [Railway](https://railway.app)
-2. Crea un nuevo proyecto con una base de datos PostgreSQL
-3. Ve a la pestaña "Variables" y copia la variable `DATABASE_URL`
+4. Aplique los cambios a la base de datos:
+   ```bash
+   npx prisma migrate deploy
+   ```
 
-### 3. Desplegar en Vercel
+### 2. Construir y Desplegar la Aplicación
 
-1. Inicia sesión en [Vercel](https://vercel.com)
-2. Haz clic en "Add New" > "Project"
-3. Importa tu repositorio de GitHub
-4. Configura las siguientes variables de entorno:
+1. Construya la aplicación:
+   ```bash
+   npm run build
+   ```
 
-   - `DATABASE_URL`: La cadena de conexión de tu base de datos PostgreSQL
-   - `NEXTAUTH_URL`: La URL completa de tu aplicación (ej. `https://coparentalidad.vercel.app`)
-   - `NEXTAUTH_SECRET`: Un secreto aleatorio (puedes generarlo con `openssl rand -base64 32`)
-   - `NEXT_PUBLIC_APP_URL`: La misma URL que `NEXTAUTH_URL`
+2. Despliegue a Vercel:
+   ```bash
+   npx vercel --prod
+   ```
 
-   Nota: La configuración de Stripe se realizará más adelante.
+## Verificación del Despliegue
 
-5. Haz clic en "Deploy"
+Una vez completado el despliegue, verifique que todo funciona correctamente:
 
-### 4. Ejecutar migraciones de la base de datos
+1. Visite la URL de la aplicación proporcionada por Vercel
+2. Inicie sesión como mediador y verifique que puede acceder al dashboard
+3. Compruebe que todas las nuevas funcionalidades de mediación funcionan como se espera
 
-Una vez desplegada la aplicación, necesitas ejecutar las migraciones de la base de datos:
+## Solución de Problemas
 
-1. En tu terminal local, configura la variable de entorno `DATABASE_URL` con la cadena de conexión de tu base de datos:
+Si encuentra algún problema durante el despliegue:
 
-```bash
-export DATABASE_URL="tu-cadena-de-conexion"
-```
+1. **Error en las migraciones**:
+   - Verifique que la conexión a la base de datos es correcta
+   - Revise los logs de Prisma para identificar el problema específico
 
-2. Ejecuta las migraciones:
+2. **Error en la construcción**:
+   - Revise los mensajes de error en la consola
+   - Asegúrese de que todas las dependencias estén instaladas (`npm install`)
 
-```bash
-npx prisma migrate deploy
-```
+3. **Error en el despliegue a Vercel**:
+   - Verifique que está autenticado en Vercel (`vercel login`)
+   - Revise los logs de despliegue en el dashboard de Vercel
 
-### 5. Verificar el despliegue
-
-1. Visita la URL de tu aplicación desplegada
-2. Verifica que puedes registrarte e iniciar sesión
-3. Comprueba que todas las funcionalidades están operativas
-
-## Funcionalidades pendientes
-
-La integración con Stripe para el procesamiento de pagos y suscripciones se configurará más adelante. Por ahora, la aplicación funcionará sin las características de suscripción premium.
-
-## Solución de problemas
-
-### Error de conexión a la base de datos
-
-Si encuentras errores de conexión a la base de datos:
-
-1. Verifica que la cadena de conexión sea correcta
-2. Asegúrate de que la base de datos esté accesible desde Vercel (algunas bases de datos requieren configurar listas blancas de IP)
-3. Comprueba que las migraciones se hayan ejecutado correctamente
-
-### Errores de autenticación
-
-Si hay problemas con la autenticación:
-
-1. Verifica que `NEXTAUTH_URL` y `NEXT_PUBLIC_APP_URL` estén configurados correctamente
-2. Asegúrate de que `NEXTAUTH_SECRET` sea un valor seguro y aleatorio
-3. Comprueba que las tablas de autenticación se hayan creado correctamente en la base de datos
-
-## Actualizaciones
-
-Para actualizar la aplicación desplegada:
-
-1. Realiza tus cambios en el código
-2. Haz commit y push a GitHub:
-
-```bash
-git add .
-git commit -m "Descripción de los cambios"
-git push
-```
-
-3. Vercel detectará automáticamente los cambios y desplegará la nueva versión
-
-Si necesitas ejecutar nuevas migraciones:
-
-```bash
-npx prisma migrate deploy
-``` 
+Para cualquier asistencia adicional, contacte al equipo de desarrollo. 

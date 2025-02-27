@@ -10,6 +10,17 @@ const nextConfig = {
   },
   // Otras configuraciones
   reactStrictMode: true,
+  output: 'standalone',
+  images: {
+    domains: ['lh3.googleusercontent.com', 'avatars.githubusercontent.com', 'github.com', 'res.cloudinary.com'],
+  },
+  // Deshabilitar la prerenderización estática para evitar errores con useSession
+  staticPageGenerationTimeout: 1000,
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'coparentalidad.vercel.app'],
+    },
+  },
 };
 
 module.exports = nextConfig; 

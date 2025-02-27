@@ -9,6 +9,7 @@ CoParentalidad es una aplicación web diseñada para ayudar a familias separadas
 - **Mensajería Interna**: Comunicación segura y organizada entre los miembros de la familia.
 - **Gestión de Documentos**: Almacenamiento y compartición de documentos importantes.
 - **Seguimiento de Gastos**: Registro y división de gastos relacionados con los hijos.
+- **Mediación Familiar**: Plataforma para mediadores legales que facilita la resolución de conflictos.
 - **Panel de Administración**: Gestión completa de usuarios y contenido para administradores.
 - **Suscripciones**: Diferentes planes de suscripción con características específicas (próximamente).
 
@@ -117,3 +118,46 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 ## Soporte
 
 Para soporte o preguntas, por favor contacta a [tu-email@ejemplo.com](mailto:tu-email@ejemplo.com).
+
+## Scripts de Utilidad
+
+El proyecto incluye varios scripts para facilitar el desarrollo y el despliegue:
+
+### `db-deploy.sh`
+
+Script para actualizar la base de datos y desplegar la aplicación en Vercel:
+
+```bash
+chmod +x db-deploy.sh
+./db-deploy.sh
+```
+
+### `vercel-deploy.sh`
+
+Script específico para el despliegue en Vercel:
+
+```bash
+chmod +x vercel-deploy.sh
+./vercel-deploy.sh
+```
+
+### `backup-db.sh`
+
+Script para realizar backups automáticos de la base de datos:
+
+```bash
+chmod +x backup-db.sh
+./backup-db.sh
+```
+
+Para más información sobre estos scripts, consulta el archivo [DEPLOY.md](./DEPLOY.md).
+
+## Módulo de Mediación Familiar
+
+El módulo de mediación permite a profesionales legales gestionar casos de mediación familiar:
+
+- **Gestión de Casos**: Registro y seguimiento de casos de mediación.
+- **Gestión de Sesiones**: Programación y documentación de sesiones de mediación.
+- **Documentos Compartidos**: Almacenamiento y compartición de documentos legales.
+- **Comunicación Segura**: Canal de comunicación entre mediadores y partes involucradas.
+- **Notas Privadas**: Espacio para que los mediadores registren notas privadas sobre los casos.

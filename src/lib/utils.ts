@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  * Formatea una fecha en formato legible
  */
 export function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = new Date(date);
   return d.toLocaleDateString("es-ES", {
     day: "numeric",
     month: "long",
@@ -21,10 +21,24 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
+ * Formatea una fecha y hora en formato legible
+ */
+export function formatDateTime(date: Date | string): string {
+  const d = new Date(date);
+  return d.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
  * Formatea una hora en formato legible
  */
 export function formatTime(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = new Date(date);
   return d.toLocaleTimeString("es-ES", {
     hour: "2-digit",
     minute: "2-digit",
@@ -48,7 +62,7 @@ export function formatCurrency(amount: number): string {
  */
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
-  return `${text.substring(0, maxLength)}...`;
+  return text.slice(0, maxLength) + "...";
 }
 
 /**
@@ -70,11 +84,48 @@ export function stringToColor(str: string): string {
 /**
  * Obtiene las iniciales de un nombre
  */
-export function getInitials(name: string): string {
+export function getInitials(name: string | null | undefined): string {
+  if (!name) return "";
   return name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
     .substring(0, 2);
+}
+
+export function generatePastelColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 70%, 80%)`;
+}
+
+export function getProgressColor(progress: number): string {
+  if (progress < 30) return "bg-red-500";
+  if (progress < 70) return "bg-yellow-500";
+  return "bg-green-500";
+}
+
+export function getStatusColor(status: string): string {
+  switch (status.toLowerCase()) {
+    case "completado":
+    case "completada":
+    case "cerrado":
+      return "bg-green-100 text-green-800";
+    case "en proceso":
+    case "programada":
+    case "activo":
+      return "bg-blue-100 text-blue-800";
+    case "pendiente":
+      return "bg-yellow-100 text-yellow-800";
+    case "cancelado":
+    case "cancelada":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
 } 

@@ -2,7 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Users, Calendar, MessageSquare, Settings, AlertTriangle, FileText, DollarSign, Trash2, Edit, RefreshCw, Plus } from "lucide-react";
+import { 
+  Users, 
+  Calendar, 
+  MessageSquare, 
+  Settings, 
+  AlertTriangle, 
+  FileText, 
+  DollarSign, 
+  Trash2, 
+  Edit, 
+  RefreshCw, 
+  Plus,
+  ShoppingBag,
+  Scale,
+  CreditCard,
+  Tag,
+  BarChart
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -11,6 +28,9 @@ import { MessageForm } from "@/components/admin/message-form";
 import { EventForm } from "@/components/admin/event-form";
 import { DocumentForm } from "@/components/admin/document-form";
 import { ExpenseForm } from "@/components/admin/expense-form";
+import { MarketplaceForm } from "@/components/admin/marketplace-form";
+import { LawyerForm } from "@/components/admin/lawyer-form";
+import { SubscriptionForm } from "@/components/admin/subscription-form";
 
 // Definición de interfaces
 interface User {
@@ -59,6 +79,47 @@ interface Expense {
   paidBy?: User;
 }
 
+interface MarketplaceItem {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string | null;
+  featured: boolean;
+}
+
+// Interfaces para nuevas secciones
+interface Lawyer {
+  id: string;
+  name: string;
+  email: string;
+  specialties: string[];
+  bio: string;
+  image: string | null;
+  verified: boolean;
+  rating: number;
+}
+
+interface Payment {
+  id: string;
+  userId: string;
+  amount: number;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  date: string;
+  paymentMethod: string;
+  description: string;
+}
+
+interface Subscription {
+  id: string;
+  name: string;
+  price: number;
+  interval: 'monthly' | 'yearly';
+  features: string[];
+  active: boolean;
+}
+
 // Interfaces para elementos nuevos
 const emptyUser: Partial<User> = {
   name: "",
@@ -93,6 +154,15 @@ const emptyExpense: Partial<Expense> = {
   paidById: "",
 };
 
+const emptyMarketplaceItem: Partial<MarketplaceItem> = {
+  title: "",
+  description: "",
+  price: 0,
+  category: "legal",
+  image: null,
+  featured: false,
+};
+
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
@@ -100,13 +170,31 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  
+  // Estado para marketplace
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplaceItem[]>([]);
+  
+  // Estados para nuevas secciones
+  const [lawyers, setLawyers] = useState<Lawyer[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  
+  // Estado para estadísticas
+  const [stats, setStats] = useState<any>(null);
+  
   const [loading, setLoading] = useState({
     users: false,
     messages: false,
     events: false,
     documents: false,
-    expenses: false
+    expenses: false,
+    marketplace: false,
+    lawyers: false,
+    payments: false,
+    subscriptions: false,
+    stats: false
   });
+  
   const [editItem, setEditItem] = useState<any>(null);
   const [editType, setEditType] = useState<string>("");
   const [isCreating, setIsCreating] = useState(false);
@@ -140,6 +228,21 @@ export default function AdminDashboard() {
     
     // Cargar gastos
     await fetchExpenses();
+    
+    // Cargar marketplace
+    await fetchMarketplaceItems();
+    
+    // Cargar abogados
+    await fetchLawyers();
+    
+    // Cargar pagos
+    await fetchPayments();
+    
+    // Cargar planes de suscripción
+    await fetchSubscriptions();
+    
+    // Cargar estadísticas
+    await fetchStats();
   };
 
   // Funciones específicas para cada tipo de datos
@@ -238,6 +341,106 @@ export default function AdminDashboard() {
     }
   };
 
+  // Función para cargar items del marketplace
+  const fetchMarketplaceItems = async () => {
+    try {
+      setLoading(prev => ({ ...prev, marketplace: true }));
+      const response = await fetch('/api/admin/marketplace');
+      if (!response.ok) throw new Error('Error al cargar productos/servicios');
+      const data = await response.json();
+      setMarketplaceItems(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los productos/servicios",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, marketplace: false }));
+    }
+  };
+
+  // Función para cargar abogados
+  const fetchLawyers = async () => {
+    try {
+      setLoading(prev => ({ ...prev, lawyers: true }));
+      const response = await fetch('/api/admin/lawyers');
+      if (!response.ok) throw new Error('Error al cargar abogados');
+      const data = await response.json();
+      setLawyers(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los abogados",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, lawyers: false }));
+    }
+  };
+
+  // Función para cargar pagos
+  const fetchPayments = async () => {
+    try {
+      setLoading(prev => ({ ...prev, payments: true }));
+      const response = await fetch('/api/admin/payments');
+      if (!response.ok) throw new Error('Error al cargar pagos');
+      const data = await response.json();
+      setPayments(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los pagos",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, payments: false }));
+    }
+  };
+
+  // Función para cargar planes de suscripción
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(prev => ({ ...prev, subscriptions: true }));
+      const response = await fetch('/api/admin/subscriptions');
+      if (!response.ok) throw new Error('Error al cargar planes de suscripción');
+      const data = await response.json();
+      setSubscriptions(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los planes de suscripción",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, subscriptions: false }));
+    }
+  };
+
+  // Función para cargar estadísticas
+  const fetchStats = async (period = 'month') => {
+    try {
+      setLoading(prev => ({ ...prev, stats: true }));
+      const response = await fetch(`/api/admin/stats?period=${period}`);
+      if (!response.ok) throw new Error('Error al cargar estadísticas');
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las estadísticas",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, stats: false }));
+    }
+  };
+
   // Funciones para eliminar elementos
   const handleDelete = async (type: string, id: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar este ${type}?`)) return;
@@ -270,6 +473,9 @@ export default function AdminDashboard() {
           break;
         case 'expenses':
           setExpenses(expenses.filter(expense => expense.id !== id));
+          break;
+        case 'marketplace':
+          setMarketplaceItems(marketplaceItems.filter(item => item.id !== id));
           break;
       }
     } catch (error) {
@@ -310,6 +516,31 @@ export default function AdminDashboard() {
         break;
       case 'expenses':
         setEditItem({...emptyExpense, id: 'new'});
+        break;
+      case 'marketplace':
+        setEditItem({...emptyMarketplaceItem, id: 'new'});
+        break;
+      case 'lawyers':
+        setEditItem({
+          id: 'new',
+          name: '',
+          email: '',
+          specialties: [],
+          bio: '',
+          image: null,
+          verified: false,
+          rating: 0
+        });
+        break;
+      case 'subscriptions':
+        setEditItem({
+          id: 'new',
+          name: '',
+          price: 0,
+          interval: 'monthly',
+          features: [],
+          active: true
+        });
         break;
     }
   };
@@ -393,6 +624,15 @@ export default function AdminDashboard() {
           break;
         case 'expenses':
           setExpenses(prev => [newItem, ...prev]);
+          break;
+        case 'marketplace':
+          setMarketplaceItems(prev => [newItem, ...prev]);
+          break;
+        case 'lawyers':
+          setLawyers(prev => [newItem, ...prev]);
+          break;
+        case 'subscriptions':
+          setSubscriptions(prev => [newItem, ...prev]);
           break;
       }
       
@@ -522,6 +762,32 @@ export default function AdminDashboard() {
             onCancel={() => { setEditItem(null); setIsCreating(false); }} 
           />
         );
+      case 'marketplace':
+        return (
+          <MarketplaceForm 
+            item={editItem as MarketplaceItem} 
+            onSave={onSave} 
+            onCancel={() => { setEditItem(null); setIsCreating(false); }} 
+          />
+        );
+      case 'lawyers':
+        return (
+          <LawyerForm 
+            lawyer={editItem as Lawyer} 
+            onSave={onSave} 
+            onCancel={() => { setEditItem(null); setIsCreating(false); }}
+            isCreating={isCreating}
+          />
+        );
+      case 'subscriptions':
+        return (
+          <SubscriptionForm 
+            subscription={editItem as Subscription} 
+            onSave={onSave} 
+            onCancel={() => { setEditItem(null); setIsCreating(false); }}
+            isCreating={isCreating}
+          />
+        );
       default:
         return null;
     }
@@ -542,6 +808,12 @@ export default function AdminDashboard() {
         return `${action} documento`;
       case 'expenses':
         return `${action} gasto`;
+      case 'marketplace':
+        return `${action} producto/servicio`;
+      case 'lawyers':
+        return `${action} perfil de abogado`;
+      case 'subscriptions':
+        return `${action} plan de suscripción`;
       default:
         return "";
     }
@@ -566,7 +838,7 @@ export default function AdminDashboard() {
         value={activeTab}
         onValueChange={handleTabChange}
       >
-        <TabsList className="mb-6 grid grid-cols-5 gap-4">
+        <TabsList className="mb-6 grid grid-cols-10 gap-2">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Usuarios
@@ -586,6 +858,26 @@ export default function AdminDashboard() {
           <TabsTrigger value="expenses" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Gastos
+          </TabsTrigger>
+          <TabsTrigger value="marketplace" className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            Marketplace
+          </TabsTrigger>
+          <TabsTrigger value="lawyers" className="flex items-center gap-2">
+            <Scale className="h-4 w-4" />
+            Abogados
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Pagos
+          </TabsTrigger>
+          <TabsTrigger value="subscriptions" className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Planes
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart className="h-4 w-4" />
+            Estadísticas
           </TabsTrigger>
         </TabsList>
 
@@ -903,6 +1195,279 @@ export default function AdminDashboard() {
                     ))
                   )}
                 </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="marketplace">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Marketplace</h2>
+                  <p className="text-gray-500">Gestiona los productos y servicios</p>
+                </div>
+                <Button 
+                  onClick={() => handleCreate('marketplace')}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Añadir producto/servicio
+                </Button>
+              </div>
+              
+              {loading.marketplace ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {marketplaceItems.length === 0 ? (
+                    <p className="text-center text-gray-500 p-4 col-span-3">No hay productos o servicios para mostrar</p>
+                  ) : (
+                    marketplaceItems.map((item) => (
+                      <div key={item.id} className="bg-white p-4 rounded-lg shadow">
+                        <div className="relative pb-3">
+                          {item.image ? (
+                            <img 
+                              src={item.image} 
+                              alt={item.title}
+                              className="w-full h-40 object-cover rounded-md mb-2"
+                            />
+                          ) : (
+                            <div className="w-full h-40 bg-gray-200 rounded-md mb-2 flex items-center justify-center">
+                              <ShoppingBag className="h-12 w-12 text-gray-400" />
+                            </div>
+                          )}
+                          {item.featured && (
+                            <span className="absolute top-2 right-2 bg-yellow-400 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                              Destacado
+                            </span>
+                          )}
+                        </div>
+                        
+                        <h3 className="font-semibold text-lg mb-1">{item.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.description}</p>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-green-600">{item.price.toFixed(2)} €</span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            {item.category}
+                          </span>
+                        </div>
+                        
+                        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end gap-2">
+                          <button 
+                            onClick={() => handleEdit('marketplace', item)}
+                            className="p-2 text-blue-500 hover:text-blue-700"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete('marketplace', item.id)}
+                            className="p-2 text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="lawyers">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Abogados y Mediadores</h2>
+                  <p className="text-gray-500">Gestiona perfiles profesionales</p>
+                </div>
+                <Button 
+                  onClick={() => handleCreate('lawyers')}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Añadir profesional
+                </Button>
+              </div>
+              
+              {loading.lawyers ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {lawyers.length === 0 ? (
+                    <p className="text-center text-gray-500 p-4">No hay profesionales para mostrar</p>
+                  ) : (
+                    <p className="text-center text-gray-500 p-4">Funcionalidad en desarrollo</p>
+                    // Aquí iría el mapeo de abogados
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Pagos</h2>
+                  <p className="text-gray-500">Gestiona transacciones y facturación</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => {}} // Exportar informes
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Exportar
+                  </Button>
+                </div>
+              </div>
+              
+              {loading.payments ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {payments.length === 0 ? (
+                    <p className="text-center text-gray-500 p-4">No hay pagos para mostrar</p>
+                  ) : (
+                    <p className="text-center text-gray-500 p-4">Funcionalidad en desarrollo</p>
+                    // Aquí iría el mapeo de pagos
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="subscriptions">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Planes de Suscripción</h2>
+                  <p className="text-gray-500">Gestiona niveles de servicio y precios</p>
+                </div>
+                <Button 
+                  onClick={() => handleCreate('subscriptions')}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Añadir plan
+                </Button>
+              </div>
+              
+              {loading.subscriptions ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {subscriptions.length === 0 ? (
+                    <p className="text-center text-gray-500 p-4">No hay planes para mostrar</p>
+                  ) : (
+                    <p className="text-center text-gray-500 p-4">Funcionalidad en desarrollo</p>
+                    // Aquí iría el mapeo de suscripciones
+                  )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Estadísticas</h2>
+                  <p className="text-gray-500">Métricas y análisis del portal</p>
+                </div>
+                <div className="flex gap-2">
+                  <select 
+                    className="border rounded p-2"
+                    onChange={(e) => {
+                      fetchStats(e.target.value);
+                    }}
+                  >
+                    <option value="week">Esta semana</option>
+                    <option value="month" selected>Este mes</option>
+                    <option value="year">Este año</option>
+                    <option value="all">Todo</option>
+                  </select>
+                </div>
+              </div>
+              
+              {loading.stats ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                </div>
+              ) : (
+                <>
+                  {stats ? (
+                    <div className="space-y-6">
+                      {/* Tarjetas de resumen */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="text-sm font-medium text-gray-500">Usuarios totales</h3>
+                          <p className="text-2xl font-bold">{stats.users.total}</p>
+                          <p className="text-sm text-green-600">+{stats.users.new} nuevos</p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="text-sm font-medium text-gray-500">Ingresos</h3>
+                          <p className="text-2xl font-bold">{stats.revenue.total.toFixed(2)} €</p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="text-sm font-medium text-gray-500">Productos</h3>
+                          <p className="text-2xl font-bold">{stats.marketplace.total}</p>
+                          <p className="text-sm text-yellow-600">{stats.marketplace.featured} destacados</p>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="text-sm font-medium text-gray-500">Abogados</h3>
+                          <p className="text-2xl font-bold">{stats.lawyers.total}</p>
+                          <p className="text-sm text-blue-600">{stats.lawyers.verified} verificados</p>
+                        </div>
+                      </div>
+                      
+                      {/* Gráficos y detalles */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="font-medium mb-4">Usuarios activos</h3>
+                          <div className="flex items-center justify-center h-40">
+                            <div className="text-center">
+                              <p className="text-3xl font-bold">{stats.users.active}</p>
+                              <p className="text-sm text-gray-500">sesiones activas</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-lg shadow">
+                          <h3 className="font-medium mb-4">Distribución de planes</h3>
+                          <div className="space-y-2">
+                            {stats.subscriptions.map((plan: any) => (
+                              <div key={plan.id} className="flex justify-between items-center">
+                                <span>{plan.name}</span>
+                                <div className="flex items-center">
+                                  <span className="font-medium">{plan.userCount}</span>
+                                  <span className="text-xs text-gray-500 ml-1">usuarios</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No hay datos estadísticos disponibles</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </TabsContent>

@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 
 import prisma from "@/lib/prisma";
 
+export type UserRole = "ADMIN" | "USER" | "MEDIADOR"
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
