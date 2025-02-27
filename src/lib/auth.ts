@@ -3,7 +3,8 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
-import prisma from "@/lib/prisma";
+import prisma, { db } from "@/lib/db";
+import { getDynamicPrismaClient } from "@/lib/db";
 
 export type UserRole = "ADMIN" | "USER" | "MEDIADOR"
 

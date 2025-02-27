@@ -1,78 +1,68 @@
-// Verificar conexión a la base de datos y existencia de usuario superadmin
+// Script para verificar la conexión a la base de datos y probar la autenticación
+// Ejecutar con: node scripts/verify-db.js
+
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 async function main() {
-  console.log('Verificando conexión a la base de datos...');
-  
-  const prisma = new PrismaClient();
+  console.log('=== INICIANDO VERIFICACIÓN DE BASE DE DATOS ===');
   
   try {
-    // Verificar la conexión a la base de datos
-    await prisma.$connect();
-    console.log('✅ Conexión a la base de datos establecida correctamente.');
-    
-    // Verificar la existencia del usuario superadmin
-    const superadmin = await prisma.user.findFirst({
-      where: {
-        email: 'superadmin@coparentalidad.com',
-      },
+    console.log(`Conectando a la base de datos con URL: ${process.env.DATABASE_URL?.substring(0, 30)}...`);
+    const prisma = new PrismaClient({
+      log: ['query', 'error', 'warn'],
     });
-    
-    if (superadmin) {
-      console.log('✅ Usuario superadmin encontrado:');
-      console.log(`   - ID: ${superadmin.id}`);
-      console.log(`   - Email: ${superadmin.email}`);
-      console.log(`   - Rol: ${superadmin.role}`);
-      console.log(`   - Creado: ${superadmin.createdAt}`);
-    } else {
-      console.log('❌ Usuario superadmin no encontrado. Creando usuario...');
-      
-      // Crear usuario superadmin si no existe
-      const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash('Admin123!', 10);
-      
-      const newSuperadmin = await prisma.user.create({
-        data: {
-          name: 'Super Administrador',
-          email: 'superadmin@coparentalidad.com',
-          password: hashedPassword,
-          role: 'ADMIN',
-        },
-      });
-      
-      console.log('✅ Superadmin creado con éxito:');
-      console.log(`   - ID: ${newSuperadmin.id}`);
-      console.log(`   - Email: ${newSuperadmin.email}`);
-      console.log(`   - Rol: ${newSuperadmin.role}`);
-    }
-    
-    // Mostrar todos los usuarios
-    const allUsers = await prisma.user.findMany({
+
+    // Testear conexión
+    console.log('Probando conexión...');
+    await prisma.$connect();
+    console.log('✅ Conexión establecida correctamente');
+
+    // Buscar usuario administrador
+    console.log('Buscando usuario administrador...');
+    const admin = await prisma.user.findFirst({
+      where: {
+        role: 'ADMIN',
+      },
       select: {
         id: true,
         email: true,
+        name: true,
         role: true,
-        createdAt: true,
+        hashedPassword: true,
+      },
+    });
+
+    if (!admin) {
+      console.log('❌ No se encontró ningún usuario administrador');
+    } else {
+      console.log(`✅ Usuario administrador encontrado: ${admin.email}`);
+      console.log(`   ID: ${admin.id}`);
+      console.log(`   Nombre: ${admin.name}`);
+      console.log(`   Rol: ${admin.role}`);
+      console.log(`   ¿Tiene contraseña?: ${admin.hashedPassword ? 'Sí' : 'No'}`);
+      
+      // Comprobar si la contraseña es "admin123"
+      if (admin.hashedPassword) {
+        const isCorrect = await bcrypt.compare('admin123', admin.hashedPassword);
+        console.log(`   ¿La contraseña 'admin123' es correcta?: ${isCorrect ? 'Sí' : 'No'}`);
       }
-    });
-    
-    console.log('\n📋 Lista de todos los usuarios:');
-    allUsers.forEach((user, index) => {
-      console.log(`\nUsuario ${index + 1}:`);
-      console.log(`   - ID: ${user.id}`);
-      console.log(`   - Email: ${user.email}`);
-      console.log(`   - Rol: ${user.role}`);
-      console.log(`   - Creado: ${user.createdAt}`);
-    });
+    }
+
+    // Contar usuarios
+    const userCount = await prisma.user.count();
+    console.log(`Total de usuarios en el sistema: ${userCount}`);
+
+    // Desconectar
+    await prisma.$disconnect();
+    console.log('Base de datos desconectada');
     
   } catch (error) {
-    console.error('❌ Error al conectar a la base de datos:', error);
-  } finally {
-    await prisma.$disconnect();
+    console.error('❌ ERROR durante la verificación:', error);
+    process.exit(1);
   }
+
+  console.log('=== VERIFICACIÓN COMPLETADA ===');
 }
 
-main().catch(e => {
-  console.error(e);
-  process.exit(1);
-}); 
+main(); 
